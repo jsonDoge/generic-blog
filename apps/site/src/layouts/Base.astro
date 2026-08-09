@@ -1,0 +1,219 @@
+---
+import { config } from "@blog-flow/shared";
+import "../styles/theme.css";
+import "../styles/main.css";
+
+interface Props {
+  title: string;
+  description: string;
+  /** Path beginning with "/", used for canonical + og:url. */
+  path: string;
+  ogType?: "website" | "article";
+  ogImage?: string | null;
+  noindex?: boolean;
+  /** Extra JSON-LD objects merged into the page @graph. */
+  jsonLd?: object[];
+}
+
+const {
+  title,
+  description,
+  path,
+  ogType = "website",
+  ogImage = null,
+  noindex = false,
+  jsonLd = [],
+} = Astro.props;
+
+const canonical = new URL(path, config.siteUrl).href;
+const ogImageUrl = ogImage
+  ? new URL(ogImage, config.siteUrl).href
+  : new URL("/assets/images/og-default.png", config.siteUrl).href;
+
+const graph = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": `${config.siteUrl}/#website`,
+      url: `${config.siteUrl}/`,
+      name: config.name,
+      description: config.description,
+      publisher: { "@id": `${config.siteUrl}/#organization` },
+      inLanguage: config.locale,
+    },
+    {
+      "@type": "Organization",
+      "@id": `${config.siteUrl}/#organization`,
+      name: config.organization.name,
+      url: `${config.siteUrl}/`,
+      logo: {
+        "@type": "ImageObject",
+        url: new URL("/assets/images/logo.svg", config.siteUrl).href,
+      },
+      sameAs: config.organization.sameAs,
+    },
+    ...jsonLd,
+  ],
+};
+
+const year = new Date().getFullYear();
+const categories = config.niche.categories;
+---
+
+<!doctype html>
+<html lang={config.locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {
+      noindex ? (
+        <meta name="robots" content="noindex" />
+      ) : (
+        <meta
+          name="robots"
+          content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+        />
+      )
+    }
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={config.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:locale" content={config.locale.replace("-", "_")} />
+    <meta name="twitter:card" content="summary_large_image" />
+    {config.twitterHandle && <meta name="twitter:site" content={config.twitterHandle} />}
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <link rel="alternate" type="application/rss+xml" title={`${config.name} RSS`} href="/feed.xml" />
+    <link rel="icon" href="/assets/images/logo.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <script is:inline>
+      try {
+        var t = localStorage.getItem("theme");
+        if (t) document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+
+    <script type="application/ld+json" set:html={JSON.stringify(graph)} />
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="container site-header__inner">
+        <a class="site-logo" href="/" aria-label={`${config.name} home`}>
+          <span class="logo-mark">✦</span>
+          {config.name}
+        </a>
+        <nav id="site-nav" class="site-nav" aria-label="Main navigation">
+          <ul>
+            <li><a href="/" aria-current={path === "/" ? "page" : undefined}>Home</a></li>
+            <li><a href="/blog/" aria-current={path.startsWith("/blog") ? "page" : undefined}>Articles</a></li>
+            {
+              categories.slice(0, 2).map((c) => (
+                <li>
+                  <a
+                    href={`/category/${c}/`}
+                    aria-current={path === `/category/${c}/` ? "page" : undefined}
+                  >
+                    {c.charAt(0).toUpperCase() + c.slice(1)}
+                  </a>
+                </li>
+              ))
+            }
+            <li><a href="/about/" aria-current={path === "/about/" ? "page" : undefined}>About</a></li>
+          </ul>
+        </nav>
+        <div class="header-actions">
+          <button class="icon-btn theme-toggle" type="button" aria-label="Toggle dark mode">
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"></path></svg>
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+          </button>
+          <button class="icon-btn nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="site-nav">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"></path></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="site-footer__grid">
+          <div>
+            <h2>{config.name}</h2>
+            <p>{config.description}</p>
+          </div>
+          <nav aria-label="Footer: explore">
+            <h2>Explore</h2>
+            <ul>
+              <li><a href="/blog/">All articles</a></li>
+              {categories.map((c) => (
+                <li><a href={`/category/${c}/`}>{c.charAt(0).toUpperCase() + c.slice(1)}</a></li>
+              ))}
+            </ul>
+          </nav>
+          <nav aria-label="Footer: follow">
+            <h2>Follow</h2>
+            <ul>
+              <li><a href="/feed.xml">RSS feed</a></li>
+              {config.organization.sameAs.map((u) => (
+                <li><a href={u} rel="me noopener" target="_blank">{new URL(u).hostname.replace("www.", "")}</a></li>
+              ))}
+            </ul>
+          </nav>
+          <nav aria-label="Footer: legal">
+            <h2>Legal</h2>
+            <ul>
+              <li><a href="/about/">Contact</a></li>
+              <li><a href="/about/">Editorial policy</a></li>
+            </ul>
+          </nav>
+        </div>
+        <div class="site-footer__bottom">
+          <p>© {year} {config.name}. All rights reserved.</p>
+          <p><a href="#main">Back to top ↑</a></p>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      const toggle = document.querySelector<HTMLButtonElement>(".nav-toggle");
+      const nav = document.getElementById("site-nav");
+      if (toggle && nav) {
+        toggle.addEventListener("click", () => {
+          const open = nav.classList.toggle("is-open");
+          toggle.setAttribute("aria-expanded", String(open));
+        });
+      }
+      const themeBtn = document.querySelector<HTMLButtonElement>(".theme-toggle");
+      if (themeBtn) {
+        themeBtn.addEventListener("click", () => {
+          const root = document.documentElement;
+          const isDark = root.dataset.theme
+            ? root.dataset.theme === "dark"
+            : matchMedia("(prefers-color-scheme: dark)").matches;
+          const next = isDark ? "light" : "dark";
+          root.dataset.theme = next;
+          try {
+            localStorage.setItem("theme", next);
+          } catch {}
+        });
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,18 @@
+---
+import Base from "../layouts/Base.astro";
+import { config } from "@blog-flow/shared";
+---
+
+<Base
+  title={`Page Not Found | ${config.name}`}
+  description="This page doesn't exist."
+  path="/404"
+  noindex
+>
+  <div class="error-page container">
+    <p class="code">404</p>
+    <h1>This page doesn't exist</h1>
+    <p>The link may be outdated, or the article may have moved.</p>
+    <a class="button" href="/blog/">Browse all articles</a>
+  </div>
+</Base>

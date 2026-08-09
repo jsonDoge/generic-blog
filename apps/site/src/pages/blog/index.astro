@@ -1,0 +1,74 @@
+---
+import Base from "../../layouts/Base.astro";
+import PostCard from "../../components/PostCard.astro";
+import { config } from "@blog-flow/shared";
+import { listPublished } from "../../lib/db";
+
+const PER_PAGE = 12;
+const pageParam = Number(Astro.url.searchParams.get("page") ?? "1");
+const page = Number.isFinite(pageParam) && pageParam > 1 ? Math.floor(pageParam) : 1;
+
+const posts = await listPublished(Astro.locals.runtime.env.BLOG_DB, {
+  limit: PER_PAGE + 1, // fetch one extra to know if a next page exists
+  offset: (page - 1) * PER_PAGE,
+});
+const hasNext = posts.length > PER_PAGE;
+const visible = posts.slice(0, PER_PAGE);
+
+const path = page > 1 ? `/blog/?page=${page}` : "/blog/";
+Astro.response.headers.set(
+  "Cache-Control",
+  "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
+);
+---
+
+<Base
+  title={`All Articles${page > 1 ? ` – Page ${page}` : ""} | ${config.name}`}
+  description={`Browse every ${config.name} article: ${config.description}`}
+  path={path}
+  jsonLd={[
+    {
+      "@type": "CollectionPage",
+      "@id": new URL(path, config.siteUrl).href,
+      name: "All Articles",
+      url: new URL(path, config.siteUrl).href,
+      isPartOf: { "@id": `${config.siteUrl}/#website` },
+    },
+  ]}
+>
+  <div class="container">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="/">Home</a></li>
+        <li aria-current="page">Articles</li>
+      </ol>
+    </nav>
+  </div>
+
+  <section class="hero container" style="padding-block: 2rem var(--space-section);">
+    <h1>All articles</h1>
+    <p class="hero__lede">Every article we've published — newest first.</p>
+  </section>
+
+  <section class="section container" aria-label="Article list">
+    {
+      visible.length === 0 ? (
+        <p>Nothing here yet.</p>
+      ) : (
+        <ul class="post-grid" style="list-style: none; padding: 0;">
+          {visible.map((p, i) => (
+            <li>
+              <PostCard post={p} eager={i === 0} />
+            </li>
+          ))}
+        </ul>
+      )
+    }
+
+    <nav class="pagination" aria-label="Pagination" style="margin-top: 2.5rem;">
+      {page > 1 && <a href={page === 2 ? "/blog/" : `/blog/?page=${page - 1}`} rel="prev">← Newer</a>}
+      <span aria-current="page">{page}</span>
+      {hasNext && <a href={`/blog/?page=${page + 1}`} rel="next">Older →</a>}
+    </nav>
+  </section>
+</Base>

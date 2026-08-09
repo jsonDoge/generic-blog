@@ -1,0 +1,71 @@
+---
+import Base from "../layouts/Base.astro";
+import { config } from "@blog-flow/shared";
+
+Astro.response.headers.set(
+  "Cache-Control",
+  "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
+);
+---
+
+<Base
+  title={`About ${config.name} – Who We Are & How We Work`}
+  description={`How ${config.name} researches, writes and fact-checks its articles, and how to reach us with questions or corrections.`}
+  path="/about/"
+  jsonLd={[
+    {
+      "@type": "AboutPage",
+      "@id": `${config.siteUrl}/about/`,
+      url: `${config.siteUrl}/about/`,
+      name: `About ${config.name}`,
+      isPartOf: { "@id": `${config.siteUrl}/#website` },
+      mainEntity: {
+        "@type": "Person",
+        name: config.author.name,
+        url: `${config.siteUrl}/about/`,
+        worksFor: { "@id": `${config.siteUrl}/#organization` },
+      },
+    },
+  ]}
+>
+  <div class="container">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="/">Home</a></li>
+        <li aria-current="page">About</li>
+      </ol>
+    </nav>
+  </div>
+
+  <article class="article-body container" style="padding-block: 1.5rem var(--space-section);">
+    <h1 style="font-size: var(--text-2xl);">About {config.name}</h1>
+    <p class="article-lede" style="color: var(--color-text-muted); font-size: var(--text-lg);">
+      {config.description}
+    </p>
+
+    <h2>How articles are made</h2>
+    <p>
+      Every article starts from multiple independent sources. Our research
+      pipeline gathers current reporting and primary sources, synthesizes them
+      into a draft with claim-level citations, and runs an automated
+      fact-check that verifies each claim against the original source text.
+      Articles that don't pass are never published. Every published article
+      lists its sources at the bottom.
+    </p>
+
+    <h2>Editorial policy</h2>
+    <p>
+      We use AI tooling for research and drafting, and every article is
+      reviewed by {config.author.name} before publication. We synthesize —
+      we don't republish. If sources disagree, we say so. When we get
+      something wrong, we correct the article and note the correction.
+    </p>
+
+    <h2>Corrections &amp; contact</h2>
+    <p>
+      Spotted an error? Email
+      <a href="mailto:hello@example.com">hello@example.com</a> and we'll fix
+      it, credited. We read every message.
+    </p>
+  </article>
+</Base>

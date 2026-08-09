@@ -1,0 +1,82 @@
+/* ==========================================================================
+   THEME TOKENS — this is the ONLY file you need to edit to re-theme the site.
+   Clone the repo, change the values below (and the fonts if you wish),
+   and the whole layout adapts: tech, beauty, fiction, food, finance…
+   ========================================================================== */
+
+:root {
+  /* ---- Brand ---------------------------------------------------------- */
+  --color-brand:        #3b5bdb;   /* primary accent (links, buttons, tags) */
+  --color-brand-hover:  #2f4ac0;
+  --color-brand-soft:   #eef1fd;   /* tinted backgrounds (tags, callouts)   */
+
+  /* ---- Surfaces & text ------------------------------------------------- */
+  --color-bg:           #ffffff;
+  --color-surface:      #f7f8fa;   /* cards, code blocks, footer            */
+  --color-border:       #e6e8ee;
+  --color-text:         #1c2130;
+  --color-text-muted:   #5b6272;
+  --color-text-faint:   #8a90a0;
+
+  /* ---- Typography ------------------------------------------------------ */
+  /* Swap these stacks for brand fonts. If you self-host webfonts, add
+     <link rel="preload"> tags in <head> and keep font-display: swap.       */
+  --font-heading: ui-serif, "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --font-body:    system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono:    ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+
+  /* Fluid type scale (min → max between 360px and 1200px viewports) */
+  --text-xs:   0.8125rem;
+  --text-sm:   0.9375rem;
+  --text-base: clamp(1rem, 0.95rem + 0.2vw, 1.0625rem);
+  --text-lg:   clamp(1.125rem, 1.05rem + 0.35vw, 1.25rem);
+  --text-xl:   clamp(1.375rem, 1.2rem + 0.8vw, 1.75rem);
+  --text-2xl:  clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem);
+  --text-3xl:  clamp(2.125rem, 1.6rem + 2.4vw, 3.25rem);
+
+  /* ---- Shape & elevation ---------------------------------------------- */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.05), 0 4px 16px rgb(16 24 40 / 0.06);
+  --shadow-card-hover: 0 2px 4px rgb(16 24 40 / 0.06), 0 12px 28px rgb(16 24 40 / 0.12);
+
+  /* ---- Layout ---------------------------------------------------------- */
+  --container: 72rem;      /* max page width      */
+  --measure:   42rem;      /* article text width  */
+  --space-section: clamp(3rem, 2rem + 4vw, 5.5rem);
+
+  color-scheme: light dark;
+}
+
+/* Dark mode — tune per theme, or delete this block to force light only.   */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-brand:       #7c93f5;
+    --color-brand-hover: #96a8f7;
+    --color-brand-soft:  #232a45;
+    --color-bg:          #12141c;
+    --color-surface:     #1a1d28;
+    --color-border:      #2a2e3d;
+    --color-text:        #e8eaf1;
+    --color-text-muted:  #a3a9ba;
+    --color-text-faint:  #767d90;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 16px rgb(0 0 0 / 0.35);
+    --shadow-card-hover: 0 2px 4px rgb(0 0 0 / 0.45), 0 12px 28px rgb(0 0 0 / 0.5);
+  }
+}
+
+/* Manual toggle (js/main.js sets data-theme on <html>) */
+:root[data-theme="dark"] {
+  --color-brand:       #7c93f5;
+  --color-brand-hover: #96a8f7;
+  --color-brand-soft:  #232a45;
+  --color-bg:          #12141c;
+  --color-surface:     #1a1d28;
+  --color-border:      #2a2e3d;
+  --color-text:        #e8eaf1;
+  --color-text-muted:  #a3a9ba;
+  --color-text-faint:  #767d90;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 16px rgb(0 0 0 / 0.35);
+  --shadow-card-hover: 0 2px 4px rgb(0 0 0 / 0.45), 0 12px 28px rgb(0 0 0 / 0.5);
+}

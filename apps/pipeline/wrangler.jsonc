@@ -1,0 +1,44 @@
+// Pipeline worker: cron trigger -> Research Workflow -> D1/R2, plus the
+// admin API/UI for reviewing drafts. REPLACE_* placeholders are filled in
+// by scripts/provision.sh.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "blog-flow-pipeline",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+
+  // The research cadence. One run = one article attempt.
+  // Default: 06:17 UTC daily (odd minute avoids the top-of-hour stampede).
+  "triggers": { "crons": ["17 6 * * *"] },
+
+  // Lets the worker `import promptText from "../../prompts/x.md"` as a string.
+  "rules": [{ "type": "Text", "globs": ["**/*.md"], "fallthrough": true }],
+
+  "d1_databases": [
+    {
+      "binding": "BLOG_DB",
+      "database_name": "replace-db-name",
+      "database_id": "REPLACE_DB_ID",
+      "migrations_dir": "../../db/migrations"
+    }
+  ],
+  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "replace-r2-bucket" }],
+  "ai": { "binding": "AI" },
+  "browser": { "binding": "BROWSER" },
+  "vectorize": [
+    { "binding": "TOPIC_INDEX", "index_name": "replace-vectorize-index" }
+  ],
+  "workflows": [
+    {
+      "name": "replace-workflow-name",
+      "binding": "RESEARCH_WORKFLOW",
+      "class_name": "ResearchWorkflow"
+    }
+  ]
+
+  // Secrets (set via `wrangler secret put`, or .dev.vars locally):
+  //   ADMIN_TOKEN      - bearer token for the /admin UI + API (required)
+  //   BRAVE_API_KEY    - optional, enables the web-search discovery layer
+}

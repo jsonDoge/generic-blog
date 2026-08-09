@@ -1,0 +1,29 @@
+// Site worker: serves the Astro app (static assets + SSR) and reads D1/R2.
+// The REPLACE_* placeholders are filled in by scripts/provision.sh.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "blog-flow-site",
+  "main": "./dist/_worker.js/index.js",
+  "compatibility_date": "2025-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist"
+  },
+  "observability": { "enabled": true },
+  "d1_databases": [
+    {
+      "binding": "BLOG_DB",
+      "database_name": "replace-db-name",
+      "database_id": "REPLACE_DB_ID"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "replace-r2-bucket"
+    }
+  ]
+  // To serve on your own domain, add:
+  // "routes": [{ "pattern": "yourdomain.com", "custom_domain": true }]
+}

@@ -1,0 +1,194 @@
+---
+import Base from "../../layouts/Base.astro";
+import PostCard from "../../components/PostCard.astro";
+import { config, hostnameOf } from "@blog-flow/shared";
+import { getPublishedBySlug, getPostSources, listPublished } from "../../lib/db";
+import { renderMarkdown, extractToc } from "../../lib/markdown";
+
+const { slug } = Astro.params;
+const db = Astro.locals.runtime.env.BLOG_DB;
+const post = slug ? await getPublishedBySlug(db, slug) : null;
+if (!post) {
+  return new Response(null, { status: 404, statusText: "Not Found" });
+}
+
+const [sources, related] = await Promise.all([
+  getPostSources(db, post.id),
+  listPublished(db, { category: post.category, limit: 4 }),
+]);
+const relatedPosts = related.filter((p) => p.id !== post.id).slice(0, 3);
+
+const html = renderMarkdown(post.markdown);
+const toc = extractToc(post.markdown);
+const path = `/blog/${post.slug}/`;
+const published = post.published_at ?? post.created_at;
+const dateLabel = new Date(published).toLocaleDateString("en-US", {
+  month: "long",
+  day: "numeric",
+  year: "numeric",
+});
+const cover = post.hero_image_key
+  ? `/images/${post.hero_image_key}`
+  : `/assets/images/cover-${(post.id % 6) + 1}.svg`;
+
+Astro.response.headers.set(
+  "Cache-Control",
+  "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
+);
+---
+
+<Base
+  title={`${post.title} | ${config.name}`}
+  description={post.description}
+  path={path}
+  ogType="article"
+  ogImage={post.hero_image_key ? `/images/${post.hero_image_key}` : null}
+  jsonLd={[
+    {
+      "@type": "BlogPosting",
+      "@id": `${new URL(path, config.siteUrl).href}#article`,
+      headline: post.title,
+      description: post.description,
+      image: new URL(cover, config.siteUrl).href,
+      datePublished: published,
+      dateModified: post.updated_at,
+      timeRequired: `PT${post.reading_minutes}M`,
+      author: {
+        "@type": "Person",
+        name: post.author || config.author.name,
+        url: new URL(config.author.url, config.siteUrl).href,
+      },
+      publisher: { "@id": `${config.siteUrl}/#organization` },
+      mainEntityOfPage: new URL(path, config.siteUrl).href,
+      articleSection: post.category,
+      keywords: post.tags,
+      inLanguage: config.locale,
+      citation: sources.map((s) => ({
+        "@type": "WebPage",
+        url: s.url,
+        name: s.title ?? hostnameOf(s.url),
+      })),
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: `${config.siteUrl}/` },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: post.category,
+          item: new URL(`/category/${post.category}/`, config.siteUrl).href,
+        },
+        { "@type": "ListItem", position: 3, name: post.title },
+      ],
+    },
+  ]}
+>
+  <div class="container">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="/">Home</a></li>
+        <li><a href={`/category/${post.category}/`}>{post.category}</a></li>
+        <li aria-current="page">{post.title}</li>
+      </ol>
+    </nav>
+  </div>
+
+  <article>
+    <header class="article-header container">
+      <a class="tag" href={`/category/${post.category}/`}>{post.category}</a>
+      <h1>{post.title}</h1>
+      <p class="article-lede">{post.description}</p>
+      <p class="post-meta">
+        <img src="/assets/images/avatar.svg" alt="" width="36" height="36" />
+        <a href={config.author.url} rel="author">{post.author || config.author.name}</a>
+        <span class="sep"></span>
+        Published <time datetime={published}>{dateLabel}</time>
+        <span class="sep"></span>
+        <span>{post.reading_minutes} min read</span>
+      </p>
+    </header>
+
+    <figure class="article-hero container">
+      <img src={cover} alt="" width="1200" height="675" fetchpriority="high" />
+    </figure>
+
+    <div class="article-body container">
+      {
+        toc.length >= 3 && (
+          <nav class="toc" aria-label="Table of contents">
+            <strong>In this article</strong>
+            <ol>
+              {toc.map((h) => (
+                <li>
+                  <a href={`#${h.id}`}>{h.text}</a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        )
+      }
+
+      <Fragment set:html={html} />
+
+      {
+        sources.length > 0 && (
+          <section aria-labelledby="sources-heading">
+            <h2 id="sources-heading">Sources</h2>
+            <p>
+              This article was researched and fact-checked against the
+              following sources:
+            </p>
+            <ul>
+              {sources.map((s) => (
+                <li>
+                  <a href={s.url} rel="noopener nofollow" target="_blank">
+                    {s.title ?? s.url}
+                  </a>{" "}
+                  <small>({s.site ?? hostnameOf(s.url)})</small>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+    </div>
+
+    <div class="container">
+      <aside class="author-box" aria-label="About the author">
+        <img src="/assets/images/avatar.svg" alt="" width="72" height="72" />
+        <div>
+          <h2>
+            Written by <a href={config.author.url} rel="author">{post.author || config.author.name}</a>
+          </h2>
+          <p>
+            Articles on this site are researched from primary sources and
+            reviewed before publishing. Read our <a href="/about/">editorial policy</a>.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </article>
+
+  {
+    relatedPosts.length > 0 && (
+      <section
+        class="section container"
+        aria-labelledby="related-heading"
+        style="margin-top: var(--space-section);"
+      >
+        <div class="section__head">
+          <h2 id="related-heading">Related articles</h2>
+          <a href="/blog/">View all →</a>
+        </div>
+        <ul class="post-grid" style="list-style: none; padding: 0;">
+          {relatedPosts.map((p) => (
+            <li>
+              <PostCard post={p} headingLevel="h3" />
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+</Base>

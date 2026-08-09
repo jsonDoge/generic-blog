@@ -1,0 +1,25 @@
+# Dependencies & build output
+node_modules/
+dist/
+.astro/
+.wrangler/
+.cache/
+
+# Local secrets — NEVER commit
+.dev.vars
+.env
+.env.*
+
+# OS cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log

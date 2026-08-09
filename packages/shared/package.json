@@ -1,0 +1,12 @@
+{
+  "name": "@blog-flow/shared",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./types": "./src/types.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

@@ -1,0 +1,50 @@
+---
+import type { Post } from "@blog-flow/shared";
+
+interface Props {
+  post: Post;
+  featured?: boolean;
+  /** Use h2 in listings, h3 on the homepage grid under a section h2. */
+  headingLevel?: "h2" | "h3";
+  eager?: boolean;
+}
+const { post, featured = false, headingLevel = "h2", eager = false } = Astro.props;
+const Heading = headingLevel;
+
+const cover = post.hero_image_key
+  ? `/images/${post.hero_image_key}`
+  : `/assets/images/cover-${(post.id % 6) + 1}.svg`;
+const date = post.published_at ?? post.created_at;
+const dateLabel = new Date(date).toLocaleDateString("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+});
+---
+
+<article class:list={["post-card", { "post-card--featured": featured }]}>
+  <div class="post-card__media">
+    <img
+      src={cover}
+      alt=""
+      width="1200"
+      height="675"
+      loading={eager ? "eager" : "lazy"}
+      fetchpriority={eager ? "high" : "auto"}
+    />
+  </div>
+  <div class="post-card__body">
+    <a class="tag" href={`/category/${post.category}/`}>{post.category}</a>
+    <Heading class="post-card__title">
+      <a href={`/blog/${post.slug}/`}>{post.title}</a>
+    </Heading>
+    <p class="post-card__excerpt">{post.description}</p>
+    <p class="post-meta post-card__meta">
+      <span>{post.author}</span>
+      <span class="sep"></span>
+      <time datetime={date}>{dateLabel}</time>
+      <span class="sep"></span>
+      <span>{post.reading_minutes} min read</span>
+    </p>
+  </div>
+</article>

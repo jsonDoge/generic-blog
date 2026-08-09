@@ -1,0 +1,22 @@
+{
+  "name": "site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "wrangler dev",
+    "deploy": "astro build && wrangler deploy"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^12.6.0",
+    "@blog-flow/shared": "workspace:*",
+    "astro": "^5.13.0",
+    "marked": "^16.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250620.0",
+    "typescript": "^5.7.0",
+    "wrangler": "^4.0.0"
+  }
+}

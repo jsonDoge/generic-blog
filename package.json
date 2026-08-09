@@ -1,0 +1,22 @@
+{
+  "name": "blog-flow",
+  "private": true,
+  "type": "module",
+  "description": "Forkable SEO-first blog starter: Astro on Cloudflare Workers, D1 content DB, R2 media, and an automated research/writing pipeline (Cron -> Workflow -> Workers AI).",
+  "scripts": {
+    "dev": "pnpm --filter site dev",
+    "dev:pipeline": "pnpm --filter pipeline dev",
+    "build": "pnpm --filter site build",
+    "check": "pnpm -r check",
+    "provision": "bash scripts/provision.sh",
+    "deploy": "pnpm --filter site deploy && pnpm --filter pipeline deploy",
+    "migrate:local": "wrangler d1 migrations apply BLOG_DB --local --config apps/pipeline/wrangler.jsonc --persist-to apps/site/.wrangler/state",
+    "migrate:remote": "wrangler d1 migrations apply BLOG_DB --remote --config apps/pipeline/wrangler.jsonc",
+    "seed:local": "wrangler d1 execute BLOG_DB --local --file db/seed.sql --config apps/pipeline/wrangler.jsonc --persist-to apps/site/.wrangler/state"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "wrangler": "^4.0.0"
+  },
+  "packageManager": "pnpm@11.13.1"
+}
