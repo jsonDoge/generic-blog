@@ -42,7 +42,8 @@ pnpm provision my-blog-name     # creates D1/R2/Vectorize/Workflow, deploys both
 ```
 
 Then open `/admin` on the pipeline worker, hit **Run pipeline now**, review
-the draft, publish. Full runbook with verification checklist: **[SETUP.md](SETUP.md)**.
+the draft, publish. Step-by-step fork guide: **[FORK.md](FORK.md)** ·
+full runbook with verification checklist: **[SETUP.md](SETUP.md)**.
 
 Requires the Workers Paid plan ($5/mo — Browser Rendering + Workflows).
 
