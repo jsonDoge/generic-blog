@@ -3,6 +3,18 @@
 Forkable SEO-first blog starter. Two Cloudflare Workers + an automated
 research/writing pipeline. Each fork = one niche blog with its own resources.
 
+## Current status (2026-08)
+
+- Fully implemented; `pnpm build` + pipeline `tsc` + `wrangler deploy
+  --dry-run` all pass; site smoke-tested locally against emulated D1
+  (all routes, JSON-LD, sitemap, RSS verified).
+- Workers AI contracts verified against a real account (see below).
+- **Provisioning has NOT been run**: wrangler configs still contain
+  `replace-*`/`REPLACE_DB_ID` placeholders, no Cloudflare resources exist
+  yet, nothing is deployed. Next milestone: `pnpm provision <name>`.
+- `blog.config.ts` still carries starter defaults (example.com siteUrl,
+  HN placeholder feed, "Blog Flow" identity).
+
 ## Architecture
 
 - **apps/site** — Astro 5 (SSR, `@astrojs/cloudflare`) on a Worker.
@@ -89,6 +101,10 @@ admin panel's step log for the actual error first:
   and `\\'` escapes — preserve that style when editing.
 - `db/seed.sql` is not idempotent (UNIQUE slug) — second local seed run
   fails harmlessly.
+- `pnpm check` only covers the pipeline (`tsc --noEmit`); the site has no
+  check script — `pnpm build` is its verification.
+- `dev:pipeline` runs `wrangler dev --test-scheduled`, which is what makes
+  the `/__scheduled?cron=...` local trigger endpoint available.
 
 ## Credentials & secrets model
 
